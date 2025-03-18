@@ -22,6 +22,11 @@ const registrationController = {
             const { tipo_inscripcion, equipos_id_equipo } = req.body;
             const equipo_id = equipos_id_equipo || null;
 
+
+            if(tipo_inscripcion != 1 && tipo_inscripcion != 2) {
+                return res.status(400).json({ error: 'Tipo de inscripción no válido' });
+            }
+
             // Validación para saber si ya está registrado en el torneo para el mismo tipo de inscripción
             if (await registrationController.searchRegistration(req.params.idTorneo, user_id.id_usuario, tipo_inscripcion)) {
                 return res.status(400).json({ error: 'Ya te encuentras registrado en este torneo' });
@@ -42,8 +47,6 @@ const registrationController = {
                 if (countRegistration >= limite_equipos) {
                     return res.status(400).json({ error: 'No hay cupo para la inscripción' });
                 }
-            }else{
-                return res.status(400).json({ error: 'Tipo de inscripción no válido' });
             }
 
             let costo = 0;
