@@ -23,7 +23,7 @@ const registrationController = {
             const equipo_id = equipos_id_equipo || null;
 
 
-            if(tipo_inscripcion != 1 && tipo_inscripcion != 2) {
+            if (tipo_inscripcion != 1 && tipo_inscripcion != 2) {
                 return res.status(400).json({ error: 'Tipo de inscripción no válido' });
             }
 
@@ -62,9 +62,11 @@ const registrationController = {
                 }
             }
 
+            var tasaCambio = await registrationController.conversionDollars(costo);
+
             // Inicio método de pago
             const paymentIntent = await stripe.paymentIntents.create({
-                amount: await registrationController.conversionDollars(costo),
+                amount: tasaCambio == 0 ? '050' : tasaCambio,
                 currency: "USD",
                 automatic_payment_methods: {
                     enabled: true,
@@ -75,7 +77,7 @@ const registrationController = {
 
             const id = paymentIntent.id;
 
-            if (Math.random() < 0.8) {  // 80% de probabilidad de que el pago sea exitoso
+            if (Math.random() < 0.8 || tasaCambio == 0) {  // 80% de probabilidad de que el pago sea exitoso
                 await stripe.paymentIntents.confirm(paymentIntent.id, {
                     payment_method: 'pm_card_visa',
                     return_url: 'https://www.example.com',
@@ -177,7 +179,7 @@ const registrationController = {
                 return null;
             }
         }
-        
+
         const resultado = String((cop / tasaCambio).toFixed(2)).replace('.', '');
         return resultado;
     },
