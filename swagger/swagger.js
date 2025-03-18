@@ -1,5 +1,5 @@
 const swaggerJsDoc = require('swagger-jsdoc');
-const serverUrl = process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
+const serverUrl = process.env.EXTERNAL || 'http://localhost:3000';
 
 const options = {
     definition: {
