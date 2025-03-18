@@ -11,7 +11,7 @@ const options = {
         },
         servers: [
             {
-                url: 'serverUrl',
+                url: serverUrl,
             },
         ],
         components: {
