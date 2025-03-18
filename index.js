@@ -4,7 +4,10 @@ const usuariosRoutes = require('./routes/usuarios');
 const torneosRoutes = require('./routes/torneos');
 const registroRoutes = require('./routes/registro');
 const teamsRoutes = require('./routes/teams');
-const { errorHandler } = require('./utils/errorHandler'); 
+const { errorHandler } = require('./utils/errorHandler');
+const swaggerUI = require('swagger-ui-express');
+const specs = require('./swagger/swagger');
+
 
 const app = express();
 const port = 3000;
@@ -17,11 +20,12 @@ app.use('/usuarios', usuariosRoutes);
 app.use('/torneos', torneosRoutes);
 app.use('/registro', registroRoutes);
 app.use('/teams', teamsRoutes);
-app.use(errorHandler); 
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
+app.use(errorHandler);
 
 
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
 });
 const gracefulShutdown = () => {

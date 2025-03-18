@@ -62,6 +62,10 @@ class tournamentRepository {
     
         const result = await db.query(query, values);
         return result.rows[0];
+    };
+    
+    async getTournamentsByGame(nameTournament) {
+        return db.query('SELECT * FROM TORNEOS WHERE LOWER(nombre) = LOWER($1)', [nameTournament]);
     }
     
 }

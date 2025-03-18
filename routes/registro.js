@@ -5,6 +5,7 @@ const authMiddleware = require('../Middleware/authMiddleware');
 
 
 router.post('/:idTorneo', registerController.postRegistrationTournament);
+router.get('/registro/:idRegistro', registerController.getRegistrationById);
 
 
 

@@ -1,6 +1,6 @@
 const db = require('../config/db');
 const jwt = require('jsonwebtoken');
-const { put } = require('../routes/teams');
+// const { put } = require('../routes/teams');
 const SECRET_KEY = process.env.JWT_SECRET || 'secreto_super_seguro';
 
 const teamsController = {

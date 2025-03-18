@@ -55,6 +55,10 @@ class tournamentService {
             throw new ApiError(400, 'Todos los campos son obligatorios');
         }
     
+        if(fecha_inicio < new Date().toISOString().split('T')[0]){
+            throw new ApiError(400, 'La fecha de inicio no puede ser menor a la fecha actual'); 
+        }
+
         if (fecha_inicio > fecha_fin) {
             throw new ApiError(400, 'La fecha de inicio no puede ser mayor a la fecha de fin');
         }
@@ -63,14 +67,20 @@ class tournamentService {
             throw new ApiError(400, 'La cantidad de equipos debe ser un número par');
         }
     
-        if (limite_views < 0) {
-            throw new ApiError(400, 'El límite de views no puede ser negativo');
+        if (limite_views <= 0) {
+            throw new ApiError(400, 'El límite de views no puede ser negativo o igual a cero');
         }
         
         const limitedFreeTournamentCount = await TournamentRepository.getLimitedFreeTournamentsByOrganizer(organizador);
         if (its_free.toUpperCase() === 'T' && limite_views === 20 && limitedFreeTournamentCount >= 2) {
             throw new ApiError(403, 'No puedes crear más de 2 torneos gratuitos con aforo de 20 views.');
         }
+
+        if(await tournamentService.getTournamentsByGame(video_juegos_id) > 0){
+            throw new ApiError( 403, 'El nombre del torneo ya existe');
+        }
+
+
         return TournamentRepository.createTournament({
             id_torneo,
             nombre,
