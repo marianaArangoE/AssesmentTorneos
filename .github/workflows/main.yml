@@ -1,0 +1,17 @@
+name: Notify Other Repo
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send repository_dispatch event to CI repo
+        run: |
+          curl -X POST -H "Authorization: token ${{ secrets.GH_PAT }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/marianaArangoE/KarateAssesmentTorneos/dispatches \
+          -d '{"event_type": "update_from_external", "client_payload": { "ref": "${{ github.ref }}" }}'
