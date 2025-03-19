@@ -15,14 +15,14 @@ const TeamsRepository = {
 
     createTeam(id_equipo, nombre, siglas, organizador) {
         return db.query(
-            'INSERT INTO EQUIPOS (id_equipo, nombre, siglas, id_creador) VALUES ($1, $2, $3, $4) RETURNING *',
+            'INSERT INTO EQUIPOS (id_equipo, nombre, siglas, id_creador) VALUES ($1, $2, $3, $4)',
             [id_equipo, nombre, siglas, organizador]
         );
     },
 
     updateTeam(idEquipo, nombre, siglas) {
         return db.query(
-            'UPDATE EQUIPOS SET nombre = $1, siglas = $2 WHERE id_equipo = $3 RETURNING *',
+            'UPDATE EQUIPOS SET nombre = $1, siglas = $2 WHERE id_equipo = $3',
             [nombre, siglas, idEquipo]
         );
     },

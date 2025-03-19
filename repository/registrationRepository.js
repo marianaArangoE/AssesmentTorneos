@@ -49,35 +49,16 @@ const RegistrationRepository = {
     async conversionDollars(cop, tasaCambio = null) {
         if (!tasaCambio) {
             try {
-                tasaCambio = await new Promise((resolve, reject) => {
-                    https.get('https://v6.exchangerate-api.com/v6/8b267eec9bcdd150e7a2437b/latest/USD', (res) => {
-                        let data = '';
-
-                        res.on('data', (chunk) => {
-                            data += chunk;
-                        });
-
-                        res.on('end', () => {
-                            try {
-                                const json = JSON.parse(data);
-                                resolve(json.conversion_rates.COP);
-                            } catch (error) {
-                                reject("Error al parsear la tasa de cambio");
-                            }
-                        });
-                    }).on('error', (err) => {
-                        reject("Error al obtener la tasa de cambio: " + err.message);
-                    });
-                });
+                const respuesta = await fetch('https://v6.exchangerate-api.com/v6/8b267eec9bcdd150e7a2437b/latest/USD');
+                const datos = await respuesta.json();
+                tasaCambio = datos.conversion_rates.COP;
             } catch (error) {
-                console.error("❌ Error al obtener la tasa de cambio:", error);
                 return null;
             }
         }
 
-        
-        const resultado = Math.round((cop / tasaCambio) * 100);
-        return resultado; 
+        const resultado = String((cop / tasaCambio).toFixed(2)).replace('.', '');
+        return resultado;
     }
 };
 

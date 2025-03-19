@@ -1,5 +1,5 @@
 const TournamentRepository = require('../repository/tournamentRepository');
-
+const { ApiError } = require('../utils/errorHandler');
 const TournamentService = {
     async getTournaments(viewAll, order) {
         if (!viewAll || !order) {
@@ -43,10 +43,29 @@ const TournamentService = {
     async createTournament(data) {
         console.log("Datos recibidos en TournamentService:", data);
     
-        const {
-            nombre, fecha_inicio, fecha_fin, video_juegos_id, its_free, limite_equipos,
-            limite_views, plataforma_id, categorias_id, descripcion, organizador
-        } = data;
+        const { nombre, fecha_inicio, fecha_fin, video_juegos_id, its_free, limite_equipos, limite_views, plataforma_id, categorias_id, descripcion,organizador } = data;
+
+        if(fecha_inicio < new Date().toISOString().split('T')[0]){
+            throw new ApiError(400, 'La fecha de inicio no puede ser menor a la fecha actual'); 
+        }
+
+        if (fecha_inicio > fecha_fin) {
+            throw new ApiError(400, 'La fecha de inicio no puede ser mayor a la fecha de fin');
+        }
+
+        if (limite_equipos % 2 !== 0) {
+            throw new ApiError(400, 'La cantidad de equipos debe ser un número par');
+        }
+
+        if (limite_views <= 0) {
+            throw new ApiError(400, 'El límite de views no puede ser negativo o igual a cero');
+        }
+
+        const limitedFreeTournamentCount = await TournamentRepository.getLimitedFreeTournamentsByOrganizer(organizador);
+        if (its_free.toUpperCase() === 'T' && limite_views === 20 && limitedFreeTournamentCount >= 2) {
+            throw new ApiError(403, 'No puedes crear más de 2 torneos gratuitos con aforo de 20 views.');
+        }
+        
     
         if (!organizador) {
             throw new Error('No se encontró el organizador en el JWT');
@@ -84,6 +103,15 @@ async updateTournament(idTorneo, updateData, userId) {
     
     if (!userId) {
         throw new Error("No se pudo autenticar el usuario.");
+    }
+    const { fecha_inicio, fecha_fin, descripcion } = updateData;
+    
+    if(fecha_inicio < new Date().toISOString().split('T')[0]){
+        throw new ApiError(400, 'La fecha de inicio no puede ser menor a la fecha actual'); 
+    }
+
+    if (fecha_inicio > fecha_fin) {
+        throw new ApiError(400, 'La fecha de inicio no puede ser mayor a la fecha de fin');
     }
 
     if (!updateData || Object.keys(updateData).length === 0) {

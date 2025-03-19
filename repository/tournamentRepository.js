@@ -62,7 +62,7 @@ class tournamentRepository {
             throw new Error("No hay campos para actualizar");
         }
     
-        const query = `UPDATE TORNEOS SET ${fieldsToUpdate.join(", ")} WHERE id_torneo = $${index} RETURNING *`;
+        const query = `UPDATE TORNEOS SET ${fieldsToUpdate.join(", ")} WHERE id_torneo = $${index}`;
         values.push(idTorneo);
     
         const result = await db.query(query, values);

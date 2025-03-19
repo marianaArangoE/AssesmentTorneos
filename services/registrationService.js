@@ -18,7 +18,9 @@ const RegistrationService = {
     
         const { its_free, limite_equipos, limite_views, categorias_id_categoria } = tournament.rows[0];
     
-       
+        if (tipo_inscripcion != 1 && tipo_inscripcion != 2) {
+            throw new Error('Tipo de inscripción no válido' );
+        }
         const countRegistration = await RegistrationRepository.getCountInscription(idTorneo, tipo_inscripcion);
         if ((tipo_inscripcion == 1 && countRegistration >= limite_views) ||
             (tipo_inscripcion == 2 && countRegistration >= limite_equipos)) {
@@ -51,14 +53,14 @@ const RegistrationService = {
     
             
             const paymentIntent = await stripe.paymentIntents.create({
-                amount: tasaCambio,
+                amount: tasaCambio == 0 ? '050' : tasaCambio,
                 currency: "USD",
                 automatic_payment_methods: { enabled: true },
                 description: 'Payment for registration',
                 receipt_email: user_id.email
             });
     
-            if (Math.random() < 0.8) {
+            if (Math.random() < 0.8 || tasaCambio == 0) {
                 await stripe.paymentIntents.confirm(paymentIntent.id, {
                     payment_method: 'pm_card_visa',
                     return_url: 'https://www.example.com',
