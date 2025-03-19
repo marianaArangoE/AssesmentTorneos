@@ -25,7 +25,7 @@ class UsuarioService {
         const hashedPassword = await bcrypt.hash(contrasena, saltRounds);
 
         try {
-            return await UsuarioRepository.createUsuario({
+             await UsuarioRepository.createUsuario({
                 id_usuario,
                 nombre,
                 correo,
@@ -33,6 +33,8 @@ class UsuarioService {
                 apodo,
                 equipos_id_equipo
             });
+
+            return { message: 'Usuario creado correctamente' };
         } catch (error) {
             throw new ApiError(500, `Error al crear el usuario: ${error.message}`);
         }
