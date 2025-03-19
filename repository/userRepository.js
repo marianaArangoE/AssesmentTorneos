@@ -3,7 +3,7 @@ const db = require('../config/db');
 class UsuarioRepository {
     async createUsuario({ id_usuario, nombre, correo, contrasena, apodo, equipos_id_equipo }) {
         return db.query(
-            'INSERT INTO usuarios (id_usuario, nombre, correo, contrasena, apodo, equipos_id_equipo) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            'INSERT INTO usuarios (id_usuario, nombre, correo, contrasena, apodo, equipos_id_equipo) VALUES ($1, $2, $3, $4, $5, $6)',
             [id_usuario, nombre, correo, contrasena, apodo, equipos_id_equipo]
         );
     }
