@@ -75,9 +75,9 @@ const RegistrationRepository = {
             }
         }
 
-        // Convertir COP a USD y asegurar que sea un número entero en centavos para Stripe
+        
         const resultado = Math.round((cop / tasaCambio) * 100);
-        return resultado; // Stripe requiere el monto en centavos
+        return resultado; 
     }
 };
 

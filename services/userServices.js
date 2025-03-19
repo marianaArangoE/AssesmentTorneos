@@ -9,12 +9,12 @@ class UsuarioService {
     async createUsuario(data) {
         const { id_usuario, nombre, correo, contrasena, apodo, equipos_id_equipo } = data;
 
-        // Si falta algún campo, devuelve 400 (Bad Request)
+    
         if (!id_usuario || !nombre || !correo || !contrasena) {
             throw new ApiError(400, 'Todos los campos son obligatorios');
         }
 
-        // Verificar si el correo ya existe (409 - Conflict)
+        
         const correoExiste = await UsuarioRepository.findByCorreo(correo);
         if (correoExiste) {
             throw new ApiError(409, 'El correo ya está registrado');
