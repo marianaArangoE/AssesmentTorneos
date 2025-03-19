@@ -19,15 +19,15 @@ const TournamentService = {
     async getTournamentById(idTorneo) {
         const result = await TournamentRepository.getTournamentById(idTorneo);
         
-        // ✅ Verifica que result y result.rows existan
+
         if (!result || !result.rows) {
             throw new Error('Error al obtener datos del torneo');
         }
     
-        // ✅ Asegurar que rows siempre sea un array vacío si no hay resultados
+
         const rows = result.rows || [];
     
-        // ✅ Devuelve el primer resultado sin errores
+
         return rows.length > 0 ? rows[0] : null;
     },
 
@@ -57,15 +57,14 @@ const TournamentService = {
             throw new Error('Todos los campos son obligatorios');
         }
     
-        // **🔴 Validación 1: No más de 2 torneos gratuitos**
+ 
         if (its_free.toUpperCase() === 'T') {
             const countFreeTournaments = await TournamentRepository.getLimitedFreeTournamentsByOrganizer(organizador);
             if (countFreeTournaments >= 2) {
                 throw new Error('No puedes crear más de 2 torneos gratuitos.');
             }
         }
-    
-        // **🔴 Validación 2: Evitar duplicados de torneos**
+
         const existingTournament = await TournamentRepository.getTournamentByExactData(nombre, fecha_inicio, fecha_fin, video_juegos_id, organizador);
         if (existingTournament) {
             throw new Error('Ya existe un torneo con los mismos datos.');
@@ -78,7 +77,7 @@ const TournamentService = {
             plataforma_id, categorias_id, descripcion, organizador 
         });
     
-        return { message: 'Torneo creado correctamente' };
+        return { message: 'Torneo creado correctamente', id_torneo };
     },
 async updateTournament(idTorneo, updateData, userId) {
     console.log("🟢 ID del usuario recibido en Service:", userId);

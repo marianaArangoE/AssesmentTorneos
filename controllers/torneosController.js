@@ -24,21 +24,21 @@ const TournamentController = {
         }
     },
 
-    async postCreateTournament(req, res) {  // 🔥 CORREGIDO AQUÍ
+    async postCreateTournament(req, res) {
         try {
             const organizador = req.user.id_usuario;
             const requestData = { ...req.body, organizador };
 
             console.log("Datos enviados al servicio:", requestData);
 
-            res.json(await TournamentService.createTournament(requestData));  // 🔥 Ahora está usando la función correcta
+            res.json(await TournamentService.createTournament(requestData));
         } catch (error) {
             res.status(400).json({ error: error.message });
         }
     },
     async updateTournament(req, res) {
         try {
-            console.log("🟢 req.user:", req.user); // Agrega esto para ver si req.user está presente
+            console.log("🟢 req.user:", req.user);
             const { idTorneo } = req.params;
             const userId = req.user?.id_usuario;
     
