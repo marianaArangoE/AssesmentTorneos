@@ -4,7 +4,7 @@ const registerController = require('../controllers/registrationController');
 const authMiddleware = require('../Middleware/authMiddleware');
 
 
-router.post('/:idTorneo', registerController.postRegistrationTournament);
+router.post('/:idTorneo',authMiddleware, registerController.postRegistrationTournament);
 router.get('/registro/:idRegistro', registerController.getRegistrationById);
 
 

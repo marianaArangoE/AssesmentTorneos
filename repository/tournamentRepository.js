@@ -14,14 +14,6 @@ class tournamentRepository {
         return result.rows.length ? result.rows[0] : null;
     }
 
-    async getTournamentsByGame(nombreJuego) {
-        return db.query(
-            `SELECT t.* FROM TORNEOS t 
-             INNER JOIN video_juegos vj ON vj.id = t.video_juegos_id 
-             WHERE LOWER(vj.nombre) = LOWER($1)`,
-            [nombreJuego]
-        );
-    }
     async getLimitedFreeTournamentsByOrganizer(organizador) {
         const result = await db.query(
             `SELECT COUNT(*) AS count FROM TORNEOS 
@@ -40,6 +32,16 @@ class tournamentRepository {
             [id_torneo, nombre, fecha_inicio, fecha_fin, video_juegos_id, its_free, limite_equipos, limite_views, plataforma_id, categorias_id, descripcion, organizador]
         );
     }
+    async getTournamentByExactData(nombre, fecha_inicio, fecha_fin, video_juegos_id, organizador) {
+    const result = await db.query(
+        `SELECT * FROM TORNEOS 
+         WHERE nombre = $1 AND fecha_inicio = $2 AND fecha_fin = $3 
+         AND video_juegos_id = $4 AND organizador = $5`,
+        [nombre, fecha_inicio, fecha_fin, video_juegos_id, organizador]
+    );
+
+    return result.rows.length ? result.rows[0] : null;
+}
     async updateTournament(idTorneo, data) {
         let fieldsToUpdate = [];
         let values = [];
@@ -54,7 +56,7 @@ class tournamentRepository {
         }
     
         if (fieldsToUpdate.length === 0) {
-            throw new ApiError(400, "No hay campos para actualizar");
+            throw new Error("No hay campos para actualizar");
         }
     
         const query = `UPDATE TORNEOS SET ${fieldsToUpdate.join(", ")} WHERE id_torneo = $${index} RETURNING *`;
@@ -62,11 +64,12 @@ class tournamentRepository {
     
         const result = await db.query(query, values);
         return result.rows[0];
-    };
+    }
     
     async getTournamentsByGame(nameTournament) {
         return db.query('SELECT * FROM TORNEOS WHERE LOWER(nombre) = LOWER($1)', [nameTournament]);
     }
+
     
 }
 

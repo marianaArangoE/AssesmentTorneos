@@ -1,127 +1,110 @@
 const TournamentRepository = require('../repository/tournamentRepository');
 
-const { ApiError } = require('../utils/errorHandler');
-const jwt = require('jsonwebtoken');
-
-class tournamentService {
+const TournamentService = {
     async getTournaments(viewAll, order) {
         if (!viewAll || !order) {
-            throw new ApiError(400, 'Los campos no pueden ser vacíos');
+            throw new Error('Los campos no pueden ser vacíos');
         }
 
         const validOrders = ['ASC', 'DESC'];
         if (!validOrders.includes(order.toUpperCase())) {
-            throw new ApiError(400, 'Orden inválido, usa ASC o DESC');
+            throw new Error('Orden inválido, usa ASC o DESC');
         }
 
         return viewAll === 'true'
-            ? TournamentRepository.getAllTournaments(order)
-            : TournamentRepository.getActiveTournaments(order);
-    }
+            ? (await TournamentRepository.getAllTournaments(order)).rows
+            : (await TournamentRepository.getActiveTournaments(order, new Date())).rows;
+    },
 
     async getTournamentById(idTorneo) {
-        const tournament = await TournamentRepository.getTournamentById(idTorneo);
-        if (!tournament) {
-            throw new ApiError(404, 'Torneo no encontrado');
-        }
-        return tournament;
-    }
+        const result = await TournamentRepository.getTournamentById(idTorneo);
+        if (!result.rows.length) throw new Error('Torneo no encontrado');
+        return result.rows[0];
+    },
 
     async getTournamentsByGame(nombreJuego) {
-        if (!nombreJuego) {
-            throw new ApiError(400, 'El nombre del juego es obligatorio');
-        }
+        if (!nombreJuego) throw new Error('El nombre del juego es obligatorio');
 
         const result = await TournamentRepository.getTournamentsByGame(nombreJuego);
-        if (result.rows.length === 0) {
-            throw new ApiError(404, 'No se encontraron torneos para este juego');
-        }
+        if (!result.rows.length) throw new Error('No se encontraron torneos para este juego');
 
         return result.rows;
-    }
+    },
 
-    async createTournament(data, token) {
-        if (!token || !token.startsWith('Bearer ')) {
-            throw new ApiError(401, 'Token no proporcionado o formato inválido');
+    async createTournament(data) {
+        console.log("Datos recibidos en TournamentService:", data);
+    
+        const {
+            nombre, fecha_inicio, fecha_fin, video_juegos_id, its_free, limite_equipos,
+            limite_views, plataforma_id, categorias_id, descripcion, organizador
+        } = data;
+    
+        if (!organizador) {
+            throw new Error('No se encontró el organizador en el JWT');
         }
     
-        const organizador = jwt.decode(token.split(' ')[1]).id_usuario;
+        if (!nombre || !fecha_inicio || !fecha_fin || !video_juegos_id || !its_free ||
+            !limite_equipos || !limite_views || !plataforma_id || !categorias_id || !descripcion) {
+            throw new Error('Todos los campos son obligatorios');
+        }
+    
+        // **🔴 Validación 1: No más de 2 torneos gratuitos**
+        if (its_free.toUpperCase() === 'T') {
+            const countFreeTournaments = await TournamentRepository.getLimitedFreeTournamentsByOrganizer(organizador);
+            if (countFreeTournaments >= 2) {
+                throw new Error('No puedes crear más de 2 torneos gratuitos.');
+            }
+        }
+    
+        // **🔴 Validación 2: Evitar duplicados de torneos**
+        const existingTournament = await TournamentRepository.getTournamentByExactData(nombre, fecha_inicio, fecha_fin, video_juegos_id, organizador);
+        if (existingTournament) {
+            throw new Error('Ya existe un torneo con los mismos datos.');
+        }
+    
         const id_torneo = Math.floor(Math.random() * 1000000);
-        
-        
-        const { nombre, fecha_inicio, fecha_fin, video_juegos_id, its_free, limite_equipos, limite_views, plataforma_id, categorias_id, descripcion } = data;
-    
-        if (!nombre || !fecha_inicio || !fecha_fin || !video_juegos_id || !its_free || !limite_equipos || !limite_views || !plataforma_id || !categorias_id || !descripcion) {
-            throw new ApiError(400, 'Todos los campos son obligatorios');
-        }
-    
-        if(fecha_inicio < new Date().toISOString().split('T')[0]){
-            throw new ApiError(400, 'La fecha de inicio no puede ser menor a la fecha actual'); 
-        }
-
-        if (fecha_inicio > fecha_fin) {
-            throw new ApiError(400, 'La fecha de inicio no puede ser mayor a la fecha de fin');
-        }
-    
-        if (limite_equipos % 2 !== 0) {
-            throw new ApiError(400, 'La cantidad de equipos debe ser un número par');
-        }
-    
-        if (limite_views <= 0) {
-            throw new ApiError(400, 'El límite de views no puede ser negativo o igual a cero');
-        }
-        
-        const limitedFreeTournamentCount = await TournamentRepository.getLimitedFreeTournamentsByOrganizer(organizador);
-        if (its_free.toUpperCase() === 'T' && limite_views === 20 && limitedFreeTournamentCount >= 2) {
-            throw new ApiError(403, 'No puedes crear más de 2 torneos gratuitos con aforo de 20 views.');
-        }
-
-        if(await tournamentService.getTournamentsByGame(video_juegos_id) > 0){
-            throw new ApiError( 403, 'El nombre del torneo ya existe');
-        }
-
-
-        return TournamentRepository.createTournament({
-            id_torneo,
-            nombre,
-            fecha_inicio,
-            fecha_fin,
-            video_juegos_id,
-            its_free: its_free.toUpperCase(),
-            limite_equipos,
-            limite_views,
-            plataforma_id,
-            categorias_id,
-            descripcion,
-            organizador
+        await TournamentRepository.createTournament({ 
+            id_torneo, nombre, fecha_inicio, fecha_fin, video_juegos_id, 
+            its_free: its_free.toUpperCase(), limite_equipos, limite_views, 
+            plataforma_id, categorias_id, descripcion, organizador 
         });
+    
+        return { message: 'Torneo creado correctamente' };
+    },
+async updateTournament(idTorneo, updateData, userId) {
+    console.log("🟢 ID del usuario recibido en Service:", userId);
+    
+    if (!userId) {
+        throw new Error("No se pudo autenticar el usuario.");
     }
-    
-    async updateTournament(idTorneo, data, token) {
-        if (!token || !token.startsWith('Bearer ')) {
-            throw new ApiError(401, 'Token no proporcionado o formato inválido');
-        }
-    
-        const tournament = await TournamentRepository.getTournamentById(idTorneo);
-        if (!tournament) {
-            throw new ApiError(404, 'Torneo no encontrado');
-        }
-    
-        const userId = jwt.decode(token.split(' ')[1]).id_usuario;
-        if (tournament.organizador !== userId) {
-            throw new ApiError(403, 'No tienes permisos para actualizar este torneo');
-        }
-    
-        
-        const updatedTournament = {
-            nombre: data.nombre || tournament.nombre,
-            fecha_inicio: data.fecha_inicio || tournament.fecha_inicio,
-            fecha_fin: data.fecha_fin || tournament.fecha_fin,
-            descripcion: data.descripcion || tournament.descripcion
-        };
-    
-        return TournamentRepository.updateTournament(idTorneo, updatedTournament);
+
+    if (!updateData || Object.keys(updateData).length === 0) {
+        throw new Error("No hay datos para actualizar");
     }
+
+    const existingTournament = await TournamentRepository.getTournamentById(idTorneo);
+    if (!existingTournament) {
+        throw new Error('Torneo no encontrado');
+    }
+
+    console.log("🟢 Torneo encontrado:", existingTournament);
+
+    if (existingTournament.organizador !== userId) {
+        console.log("🔴 Intento de actualización no autorizado. Organizador:", existingTournament.organizador, "Usuario:", userId);
+        throw new Error("No tienes permisos para actualizar este torneo");
+    }
+
+    const updatedData = {
+        nombre: updateData.nombre ? updateData.nombre.substring(0, 100) : existingTournament.nombre, 
+        fecha_inicio: updateData.fecha_inicio || existingTournament.fecha_inicio,
+        fecha_fin: updateData.fecha_fin || existingTournament.fecha_fin,
+        descripcion: updateData.descripcion ? updateData.descripcion.substring(0, 255) : existingTournament.descripcion
+    };
+
+    return await TournamentRepository.updateTournament(idTorneo, updatedData);
 }
 
-module.exports = new tournamentService();
+    
+};
+
+module.exports = TournamentService;
