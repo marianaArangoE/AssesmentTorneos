@@ -115,7 +115,7 @@ router.post('/login', usuariosController.login);
  *       200:
  *         description: Información del usuario obtenida exitosamente
  *       401:
- *         description: No autorizado
+ *         description: No autorizado (falta token o token inválido)
  */
 router.get('/me', authMiddleware, usuariosController.getUsuario);
 

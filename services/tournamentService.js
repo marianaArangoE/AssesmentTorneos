@@ -18,8 +18,17 @@ const TournamentService = {
 
     async getTournamentById(idTorneo) {
         const result = await TournamentRepository.getTournamentById(idTorneo);
-        if (!result.rows.length) throw new Error('Torneo no encontrado');
-        return result.rows[0];
+        
+        // ✅ Verifica que result y result.rows existan
+        if (!result || !result.rows) {
+            throw new Error('Error al obtener datos del torneo');
+        }
+    
+        // ✅ Asegurar que rows siempre sea un array vacío si no hay resultados
+        const rows = result.rows || [];
+    
+        // ✅ Devuelve el primer resultado sin errores
+        return rows.length > 0 ? rows[0] : null;
     },
 
     async getTournamentsByGame(nombreJuego) {

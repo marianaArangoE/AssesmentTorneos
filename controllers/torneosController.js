@@ -11,9 +11,16 @@ const TournamentController = {
 
     async getTournamentById(req, res) {
         try {
-            res.json(await TournamentService.getTournamentById(req.params.idTorneo));
+            const torneo = await TournamentService.getTournamentById(req.params.idTorneo);
+    
+            if (!torneo) {
+                return res.status(404).json({ error: "Torneo no encontrado" });
+            }
+    
+            res.json(torneo);
         } catch (error) {
-            res.status(404).json({ error: error.message });
+            console.error("🔴 Error en getTournamentById:", error);
+            res.status(500).json({ error: "Error interno del servidor" });
         }
     },
 

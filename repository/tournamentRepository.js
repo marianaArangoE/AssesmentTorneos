@@ -11,7 +11,9 @@ class tournamentRepository {
 
     async getTournamentById(idTorneo) {
         const result = await db.query('SELECT * FROM TORNEOS WHERE id_torneo = $1', [idTorneo]);
-        return result.rows.length ? result.rows[0] : null;
+    
+        // ✅ Si la consulta no devolvió filas, retorna un objeto vacío en lugar de `undefined`
+        return result && result.rows ? result : { rows: [] };
     }
 
     async getLimitedFreeTournamentsByOrganizer(organizador) {
