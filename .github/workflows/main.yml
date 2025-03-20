@@ -9,6 +9,10 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
+    
+      - name: Wait 1 minute before sending event
+        run: sleep 60  
+        
       - name: Send repository_dispatch event to CI repo
         run: |
           curl -X POST -H "Authorization: token ${{ secrets.GH_PAT }}" \
