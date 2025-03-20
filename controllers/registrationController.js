@@ -9,9 +9,10 @@ const RegistrationController = {
             const user_id = req.user.id_usuario;
             
 
-            const { tipo_inscripcion, equipos_id_equipo } = req.body;
+            const { tipo_inscripcion } = req.body;
             const idTorneo = req.params.idTorneo;
 
+            const equipos_id_equipo = await RegistrationService.getEquipoIdByUserId(user_id);
             
             const qrBase64 = await RegistrationService.registerForTournament(idTorneo, tipo_inscripcion, equipos_id_equipo, user_id);
 

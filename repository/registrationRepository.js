@@ -59,6 +59,10 @@ const RegistrationRepository = {
 
         const resultado = String((cop / tasaCambio).toFixed(2)).replace('.', '');
         return resultado;
+    },
+    async getEquipoIdByUserId(user_id) {
+        const restul = await db.query('SELECT * FROM usuarios WHERE id_usuario = $1', [user_id]);
+        return restul.rows[0].equipos_id_equipo;
     }
 };
 
