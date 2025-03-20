@@ -18,17 +18,7 @@ const TournamentService = {
 
     async getTournamentById(idTorneo) {
         const result = await TournamentRepository.getTournamentById(idTorneo);
-        
-
-        if (!result || !result.rows) {
-            throw new Error('Error al obtener datos del torneo');
-        }
-    
-
-        const rows = result.rows || [];
-    
-
-        return rows.length > 0 ? rows[0] : null;
+        return result;
     },
 
     async getTournamentsByGame(nombreJuego) {
